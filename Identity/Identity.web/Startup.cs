@@ -46,7 +46,8 @@ namespace Identity.web
                 options.User.RequireUniqueEmail = true;
                 options.User.AllowedUserNameCharacters = "abcçdefgðhýijklmnoöpqrþstuüvwxyzABCÇDEFGHIÝJKLMNOÖPQRSÞTUÜVWXYZ0123456789-._";
             }).AddEntityFrameworkStores<AppIdentityDbContext>()
-            .AddPasswordValidator<CustomPasswordValidator>();//Custom þifre kontrol sistemimizi de kontrol eder
+            .AddPasswordValidator<CustomPasswordValidator>()//Custom þifre kontrol sistemimizi de kontrol eder
+            .AddUserValidator<CustomUserValidator>();
 
             services.AddControllersWithViews();
         }
