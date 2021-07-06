@@ -1,6 +1,9 @@
+using Identity.web.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -22,6 +25,16 @@ namespace Identity.web
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<AppIdentityDbContext>(opt=> {
+                //opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnectionString"));
+                opt.UseSqlServer(Configuration["ConnectionStrings:DefaultConnectionString"]);
+            
+            });
+
+            //AppUser yerine IdentityUser da koyabiliriz ama biz IdentiyUser içerisindeki tanýmlamalardan fazlasýný tanýmlayacaðýmýz için ondan kalýtým alýp AppUser Classýný oluþturduk
+            //IdentityRole içerisindeki tanýmlar yapýmýza yetersiz ise AppUser gibi yeni bir class oluþturarak bunun önüne geçebiliriz.
+            services.AddIdentity<AppUser, AppRole>().AddEntityFrameworkStores<AppIdentityDbContext>();
+
             services.AddControllersWithViews();
         }
 

@@ -1,4 +1,6 @@
 ﻿using Identity.web.Models;
+using Identity.web.ViewModels;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -11,23 +13,56 @@ namespace Identity.web.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly UserManager<AppUser> _userManager;//kullanıcı bilgilerini getirir
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(UserManager<AppUser> userManager)
         {
-            _logger = logger;
+            _userManager = userManager;
         }
 
         public IActionResult Index()
         {
+            return View(_userManager.Users);
+        }
+        public IActionResult SignUp()
+        {
+            
             return View();
         }
 
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        [HttpPost]
+        public async Task<IActionResult> SignUp(UserViewModel userViewModel)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            if (ModelState.IsValid)
+            {
+                AppUser appUser = new AppUser();
+
+                appUser.UserName = userViewModel.UserName;
+                appUser.PhoneNumber = userViewModel.PhoneNumber;
+                appUser.Email = userViewModel.Email;
+
+               IdentityResult result = await _userManager.CreateAsync(appUser,userViewModel.Password);//şifreyi böyle giriyoruz çünkü şifreleme olarak kaydedilmesi gerekiyor
+
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("LogIn");
+                }
+                else
+                {
+                    foreach (IdentityError error in result.Errors)
+                    {
+                        ModelState.AddModelError("", error.Description);
+                    }
+                }
+
+            }
+            return View(userViewModel);
+        }
+
+        public IActionResult LogIn()
+        {
+
+            return View();
         }
     }
 }
