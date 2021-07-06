@@ -11,12 +11,18 @@ namespace Identity.web.Controllers
 {
     public class AdminController : Controller
     {
-        
+
+        private readonly UserManager<AppUser> _userManager;//kullanıcı bilgilerini getirir
+
+        public AdminController(UserManager<AppUser> userManager)
+        {
+            _userManager = userManager;
+        }
 
         public IActionResult Index()
         {
-            return View();
+            return View(_userManager.Users);
         }
-       
+
     }
 }

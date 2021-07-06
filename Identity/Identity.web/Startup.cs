@@ -25,15 +25,23 @@ namespace Identity.web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<AppIdentityDbContext>(opt=> {
+            services.AddDbContext<AppIdentityDbContext>(opt =>
+            {
                 //opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnectionString"));
                 opt.UseSqlServer(Configuration["ConnectionStrings:DefaultConnectionString"]);
-            
+
             });
 
             //AppUser yerine IdentityUser da koyabiliriz ama biz IdentiyUser içerisindeki tanýmlamalardan fazlasýný tanýmlayacaðýmýz için ondan kalýtým alýp AppUser Classýný oluþturduk
             //IdentityRole içerisindeki tanýmlar yapýmýza yetersiz ise AppUser gibi yeni bir class oluþturarak bunun önüne geçebiliriz.
-            services.AddIdentity<AppUser, AppRole>().AddEntityFrameworkStores<AppIdentityDbContext>();
+            services.AddIdentity<AppUser, AppRole>(options =>
+            {
+                options.Password.RequiredLength = 8;
+                options.Password.RequireNonAlphanumeric = true;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireDigit = false;
+            }).AddEntityFrameworkStores<AppIdentityDbContext>();
 
             services.AddControllersWithViews();
         }
