@@ -42,6 +42,9 @@ namespace Identity.web
                 options.Password.RequireUppercase = false;
                 options.Password.RequireLowercase = false;
                 options.Password.RequireDigit = false;
+
+                options.User.RequireUniqueEmail = true;
+                options.User.AllowedUserNameCharacters = "abcçdefgðhýijklmnoöpqrþstuüvwxyzABCÇDEFGHIÝJKLMNOÖPQRSÞTUÜVWXYZ0123456789-._";
             }).AddEntityFrameworkStores<AppIdentityDbContext>()
             .AddPasswordValidator<CustomPasswordValidator>();//Custom þifre kontrol sistemimizi de kontrol eder
 
