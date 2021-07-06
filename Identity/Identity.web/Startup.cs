@@ -47,8 +47,9 @@ namespace Identity.web
                 options.User.AllowedUserNameCharacters = "abcçdefgðhýijklmnoöpqrþstuüvwxyzABCÇDEFGHIÝJKLMNOÖPQRSÞTUÜVWXYZ0123456789-._";
             }).AddEntityFrameworkStores<AppIdentityDbContext>()
             .AddPasswordValidator<CustomPasswordValidator>()//Custom þifre kontrol sistemimizi de kontrol eder
-            .AddUserValidator<CustomUserValidator>();
-
+            .AddUserValidator<CustomUserValidator>()
+            .AddErrorDescriber<CustomIdentityErrorDescriber>();
+            
             services.AddControllersWithViews();
         }
 
