@@ -2,6 +2,7 @@ using Identity.web.CustomValidation;
 using Identity.web.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +34,23 @@ namespace Identity.web
 
             });
 
+            CookieBuilder cookieBuilder = new CookieBuilder();
+            cookieBuilder.Name = "MySite";
+            cookieBuilder.HttpOnly = false;//client tarafýnda okumayacaksam false çekeriz. Güvenlidir.
+            cookieBuilder.Expiration = TimeSpan.FromDays(1);//1 kere giriþ yapýnca 1 gün boyunca kalýr.
+            cookieBuilder.SameSite = SameSiteMode.Lax;//Strict ise bankalarda kullanýlmasý daha mantýklý. Cookienin sadece bizim siteden kullanýlmasýný isteyip istemediðimizi belirtir. Varsayýlan tüm siteler cookimize eriþebilir.
+            cookieBuilder.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+            //Always:cookie sadece https üzerinden gelirse sadece https üzerinden okunabilir.
+            //SameAsRequest:Hangi tipte(http,https) o tipte gönderilen yine cookie  o tipte okunabilir. None ise nerden gelirse gelsin cookie her tipten okunabilir.
+
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.LoginPath = new PathString("/Home/Login");//Kýsýtlý sayfalara eriþmeye çalýþtýðýnda belirtilen adrese yönlendirilir.                
+                options.Cookie = cookieBuilder;
+                options.SlidingExpiration = true;//Kullanýcý her giriþ yaptýðýnda cookie ömrü uzar. Yukarda 1 gün verdik baþlangýçta. Eðer 1 gün içerisinde tekrar girerse süre otomatik 1 gün uzar.
+            });
+
+
             //AppUser yerine IdentityUser da koyabiliriz ama biz IdentiyUser içerisindeki tanýmlamalardan fazlasýný tanýmlayacaðýmýz için ondan kalýtým alýp AppUser Classýný oluþturduk
             //IdentityRole içerisindeki tanýmlar yapýmýza yetersiz ise AppUser gibi yeni bir class oluþturarak bunun önüne geçebiliriz.
             services.AddIdentity<AppUser, AppRole>(options =>
@@ -49,7 +67,7 @@ namespace Identity.web
             .AddPasswordValidator<CustomPasswordValidator>()//Custom þifre kontrol sistemimizi de kontrol eder
             .AddUserValidator<CustomUserValidator>()
             .AddErrorDescriber<CustomIdentityErrorDescriber>();
-            
+
             services.AddControllersWithViews();
         }
 
