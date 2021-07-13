@@ -15,20 +15,15 @@ using Identity.web.Enums;
 
 namespace Identity.web.Controllers
 {
-    public class MemberController : Controller
+    public class MemberController : BaseController
     {
-        private readonly UserManager<AppUser> _userManager;//kullanıcı bilgilerini getirir
-        private readonly SignInManager<AppUser> _signInManager;//login işlemlerini getirir
-
-        public MemberController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+        public MemberController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, RoleManager<AppRole> roleManager = null) : base(userManager, signInManager, roleManager)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
         }
 
         public IActionResult Index()
         {
-            AppUser user = _userManager.FindByNameAsync("sedat").Result;
+            AppUser user = CurrentUser;
 
             UserViewModel userViewModel = user.Adapt<UserViewModel>();//automapper gibi bu da. Kullanımı kolay
 
@@ -48,7 +43,7 @@ namespace Identity.web.Controllers
 
             if (ModelState.IsValid)
             {
-                AppUser user = await _userManager.FindByNameAsync("sedat");//User.Identity.Name sedat yerine cookiden gelir
+                AppUser user = CurrentUser;
 
                 bool exist = _userManager.CheckPasswordAsync(user, viewModel.PasswordOld).Result;//eski şifre sorgulaması
 
@@ -67,10 +62,7 @@ namespace Identity.web.Controllers
                     }
                     else
                     {
-                        foreach (IdentityError error in result.Errors)
-                        {
-                            ModelState.AddModelError("", error.Description);
-                        }
+                        AddModelError(result);//basecontroller içinde
                     }
                 }
                 else
@@ -84,7 +76,7 @@ namespace Identity.web.Controllers
 
         public IActionResult UserEdit()
         {
-            AppUser user = _userManager.FindByNameAsync("sedat").Result;
+            AppUser user = CurrentUser;
 
             UserViewModel userViewModel = user.Adapt<UserViewModel>();
 
@@ -99,7 +91,7 @@ namespace Identity.web.Controllers
             ViewBag.Gender = new SelectList(Enum.GetNames(typeof(Gender)));
             if (ModelState.IsValid)
             {
-                AppUser user = _userManager.FindByNameAsync("sedat").Result;
+                AppUser user = CurrentUser;
 
                 string phone = _userManager.GetPhoneNumberAsync(user).Result;
 
@@ -148,10 +140,7 @@ namespace Identity.web.Controllers
                 }
                 else
                 {
-                    foreach (IdentityError error in result.Errors)
-                    {
-                        ModelState.AddModelError("", error.Description);
-                    }
+                    AddModelError(result);//basecontroller içinde
                 }
             }
 

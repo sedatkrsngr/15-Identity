@@ -9,14 +9,10 @@ using System.Threading.Tasks;
 
 namespace Identity.web.Controllers
 {
-    public class AdminController : Controller
+    public class AdminController : BaseController
     {
-
-        private readonly UserManager<AppUser> _userManager;//kullanıcı bilgilerini getirir
-
-        public AdminController(UserManager<AppUser> userManager)
+        public AdminController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, RoleManager<AppRole> roleManager = null) : base(userManager, signInManager, roleManager)
         {
-            _userManager = userManager;
         }
 
         public IActionResult Index()

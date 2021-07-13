@@ -11,15 +11,10 @@ using System.Threading.Tasks;
 
 namespace Identity.web.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController//base controol ekledikten sonra otomatik yandan concstructor oluşturunca alttaki oluşur
     {
-        private readonly UserManager<AppUser> _userManager;//kullanıcı bilgilerini getirir
-        private readonly SignInManager<AppUser> _signInManager;//login işlemlerini getirir
-
-        public HomeController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+        public HomeController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, RoleManager<AppRole> roleManager = null) : base(userManager, signInManager, roleManager)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
         }
 
         public IActionResult Index()
@@ -55,10 +50,7 @@ namespace Identity.web.Controllers
                 }
                 else
                 {
-                    foreach (IdentityError error in result.Errors)
-                    {
-                        ModelState.AddModelError("", error.Description);
-                    }
+                    AddModelError(result);//basecontroller içinde
                 }
 
             }
@@ -201,10 +193,7 @@ namespace Identity.web.Controllers
                 }
                 else
                 {
-                    foreach (IdentityError error in result.Errors)
-                    {
-                        ModelState.AddModelError("", error.Description);
-                    }
+                    AddModelError(result);//basecontroller içinde
                 }
 
             }
