@@ -51,7 +51,8 @@ namespace Identity.web
             }).AddEntityFrameworkStores<AppIdentityDbContext>()
             .AddPasswordValidator<CustomPasswordValidator>()//Custom þifre kontrol sistemimizi de kontrol eder
             .AddUserValidator<CustomUserValidator>()
-            .AddErrorDescriber<CustomIdentityErrorDescriber>();
+            .AddErrorDescriber<CustomIdentityErrorDescriber>()
+            .AddDefaultTokenProviders();//token üretmesi için bu gerekli
 
             CookieBuilder cookieBuilder = new CookieBuilder();
             cookieBuilder.Name = "MySite";
@@ -63,7 +64,8 @@ namespace Identity.web
 
             services.ConfigureApplicationCookie(options =>
             {
-                options.LoginPath = new PathString("/Home/Login");//Kýsýtlý sayfalara eriþmeye çalýþtýðýnda belirtilen adrese yönlendirilir.                
+                options.LoginPath = new PathString("/Home/Login");//Kýsýtlý sayfalara eriþmeye çalýþtýðýnda belirtilen adrese yönlendirilir.
+                options.LogoutPath= new PathString("/Member/LogOut");//bunu buraya koyarsak çýkýþ yap butonunun arkasýndaki asp-route-returUrl="/Home/Index" çalýþýr
                 options.Cookie = cookieBuilder;
                 options.SlidingExpiration = true;//Kullanýcý her giriþ yaptýðýnda cookie ömrü uzar. Yukarda 1 gün verdik baþlangýçta. Eðer 1 gün içerisinde tekrar girerse süre otomatik 1 gün uzar.
                 options.ExpireTimeSpan = TimeSpan.FromDays(1);

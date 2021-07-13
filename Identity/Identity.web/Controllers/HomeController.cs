@@ -24,7 +24,11 @@ namespace Identity.web.Controllers
 
         public IActionResult Index()
         {
-            return View(_userManager.Users);
+            if (User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Member");
+            }
+            return View();
         }
         public IActionResult SignUp()
         {
@@ -102,7 +106,7 @@ namespace Identity.web.Controllers
                     }
                     else
                     {
-                        await _userManager.AccessFailedAsync(appUser)//başarısız girişi 1 arttır
+                        await _userManager.AccessFailedAsync(appUser);//başarısız girişi 1 arttır
                         int failCount = await _userManager.GetAccessFailedCountAsync(appUser);//Başarısız giriş sayısı
                         ModelState.AddModelError("", $"{failCount} kez başarısız giriş");
                         if (failCount == 3)
@@ -128,6 +132,88 @@ namespace Identity.web.Controllers
 
             }
             return View(loginViewModel);
+        }
+
+        public IActionResult ResetPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult ResetPassword(PasswordResetViewModel resetViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+
+                AppUser appUser = _userManager.FindByEmailAsync(resetViewModel.Email).Result;
+
+                if (appUser != null)
+                {
+                    string passwordResetToken = _userManager.GeneratePasswordResetTokenAsync(appUser).Result;
+
+                    //passwordResetLİnk bizim methodumuza gidecek  //siteadı/ResetPasswordConfirm?userId=...&token=...
+                    string passwordResetLİnk = Url.Action("ResetPasswordConfirm", "Home", new
+                    {
+                        userId = appUser.Id,
+                        token=passwordResetToken
+
+                    },HttpContext.Request.Scheme);
+
+
+                    Helper.PasswordReset.PasswordResetSentEmail(passwordResetLİnk,resetViewModel.Email);
+                    ViewBag.Status = "successfull";
+
+                }
+                else
+                {
+
+                    ModelState.AddModelError("", "Bu Email adresine kayıtlı kullanıcı bulunamamıştır.");
+                }
+            }
+
+            return View();
+        }
+
+        public IActionResult ResetPasswordConfirm(string userId, string token)
+        {
+            TempData["userId"] = userId;
+            TempData["token"] = token;
+
+            return View();
+        }
+        [HttpPost]
+        //Bind işlemi sadece password alanın üzerinden yapacağımız için email alanının gelmesine gerek yok
+        public async Task<IActionResult> ResetPasswordConfirm([Bind("PasswordNew")]PasswordResetViewModel passwordResetViewModel)
+        {
+            string token = TempData["token"].ToString();
+            string userId = TempData["userId"].ToString();
+
+            AppUser user = await _userManager.FindByIdAsync(userId);
+            if (user != null)
+            {
+                IdentityResult result = await _userManager.ResetPasswordAsync(user, token, passwordResetViewModel.PasswordNew);
+
+                if (result.Succeeded)
+                {
+                    await _userManager.UpdateSecurityStampAsync(user);//şifre,telefon vs önemli bilgilerde değişiklik olduğu zaman güncellemeliyiz 
+
+                    TempData["PasswordResetInfo"] = "Şifreniz Başarıyla Yenilenmiştir.";
+                }
+                else
+                {
+                    foreach (IdentityError error in result.Errors)
+                    {
+                        ModelState.AddModelError("", error.Description);
+                    }
+                }
+
+            }
+            else
+            {
+                ModelState.AddModelError("", "Bir hata meydana geldi, lütfen daha sonra tekrar deneyiniz!");
+            }
+
+            return View();
         }
     }
 }
