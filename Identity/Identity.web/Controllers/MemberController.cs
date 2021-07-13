@@ -11,6 +11,7 @@ using Identity.web.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.IO;
 using Microsoft.AspNetCore.Http;
+using Identity.web.Enums;
 
 namespace Identity.web.Controllers
 {
@@ -87,7 +88,7 @@ namespace Identity.web.Controllers
 
             UserViewModel userViewModel = user.Adapt<UserViewModel>();
 
-           // ViewBag.Gender = new SelectList(Enum.GetNames(typeof(Gender)));
+            ViewBag.Gender = new SelectList(Enum.GetNames(typeof(Gender)));
 
             return View(userViewModel);
         }
@@ -95,45 +96,45 @@ namespace Identity.web.Controllers
         public async Task<IActionResult> UserEdit(UserViewModel userViewModel, IFormFile userPicture)
         {
             ModelState.Remove("Password");//password alanının bilgi güncellemede kullanmadığımız için isvalidden passwordu yoksaydık yoksa geçemeyiz
-           // ViewBag.Gender = new SelectList(Enum.GetNames(typeof(Gender)));
+            ViewBag.Gender = new SelectList(Enum.GetNames(typeof(Gender)));
             if (ModelState.IsValid)
             {
                 AppUser user = _userManager.FindByNameAsync("sedat").Result;
 
-                //string phone = _userManager.GetPhoneNumberAsync(user).Result;
+                string phone = _userManager.GetPhoneNumberAsync(user).Result;
 
-                //if (phone != userViewModel.PhoneNumber)
-                //{
-                //    if (_userManager.Users.Any(u => u.PhoneNumber == userViewModel.PhoneNumber))
-                //    {
-                //        ModelState.AddModelError("", "Bu telefon numarası başka üye tarafından kullanılmaktadır.");
-                //        return View(userViewModel);
-                //    }
-                //}
+                if (phone != userViewModel.PhoneNumber)
+                {
+                    if (_userManager.Users.Any(u => u.PhoneNumber == userViewModel.PhoneNumber))
+                    {
+                        ModelState.AddModelError("", "Bu telefon numarası başka üye tarafından kullanılmaktadır.");
+                        return View(userViewModel);
+                    }
+                }
 
-                //if (userPicture != null && userPicture.Length > 0)
-                //{
-                //    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(userPicture.FileName);
+                if (userPicture != null && userPicture.Length > 0)
+                {
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(userPicture.FileName);
 
-                //    var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/UserPicture", fileName);
+                    var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/UserPicture", fileName);
 
-                //    using (var stream = new FileStream(path, FileMode.Create))
-                //    {
-                //        await userPicture.CopyToAsync(stream);
+                    using (var stream = new FileStream(path, FileMode.Create))
+                    {
+                        await userPicture.CopyToAsync(stream);
 
-                //        user.Picture = "/UserPicture/" + fileName;
-                //    }
-                //}
+                        user.Picture = "/UserPicture/" + fileName;
+                    }
+                }
 
                 user.UserName = userViewModel.UserName;
                 user.Email = userViewModel.Email;
                 user.PhoneNumber = userViewModel.PhoneNumber;
 
-                //user.City = userViewModel.City;
+                user.City = userViewModel.City;
 
-                //user.BirthDay = userViewModel.BirthDay;
+                user.BirthDay = userViewModel.BirthDay;
 
-                //user.Gender = (int)userViewModel.Gender;
+                user.Gender = (int)userViewModel.Gender;
 
                 IdentityResult result = await _userManager.UpdateAsync(user);
 
