@@ -17,6 +17,7 @@ namespace Identity.web.Controllers
 
         protected AppUser CurrentUser => _userManager.FindByNameAsync(User.Identity.Name).Result;
 
+        //roleManager null vermemizin sebebi kullanılmayan yerlede patlamasın diye
         public BaseController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, RoleManager<AppRole> roleManager = null)
         {
             _userManager = userManager;

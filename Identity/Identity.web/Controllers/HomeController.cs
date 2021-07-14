@@ -46,6 +46,17 @@ namespace Identity.web.Controllers
 
                 if (result.Succeeded)
                 {
+                    string confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
+
+                    string link = Url.Action("ConfirmEmail", "Home", new
+                    {
+                        userId = appUser.Id,
+                        token = confirmationToken
+
+                    }, protocol: HttpContext.Request.Scheme);
+
+                    Helper.EmailConfirmation.SendEmail(link,appUser.Email);
+
                     return RedirectToAction("LogIn");
                 }
                 else
@@ -78,12 +89,21 @@ namespace Identity.web.Controllers
                     {
 
                         ModelState.AddModelError("", "Hesabınız bir süreliğine kitlenmiştir. Lütfen daha sonra tekrar deneyiniz");
+                        return View(loginViewModel);
                     }
+
+
+                    if (await _userManager.IsEmailConfirmedAsync(appUser)== false)
+                    {
+                        ModelState.AddModelError("","Email adresiniz doğrulanmamıştır. Lütfen epostanızı kontrol ediniz.");
+                        return View(loginViewModel);
+                    }
+
 
                     //cookileri sileriz başlangıçta
                     await _signInManager.SignOutAsync();
 
-                    Microsoft.AspNetCore.Identity.SignInResult result = await _signInManager.PasswordSignInAsync(appUser, loginViewModel.Password, loginViewModel.RememberMe, true);
+                    Microsoft.AspNetCore.Identity.SignInResult result = await _signInManager.PasswordSignInAsync(appUser, loginViewModel.Password, loginViewModel.RememberMe, false);
                     //ilk boolena olan beni hatırlaya bağlı olmalı eğer beni hatırla olmaz ise kapattığımızda bilgiler uçar,
                     //ikinci boolean olan ise hatalı giriş yapılıncı hesabı belli bir süre kitler.
 
@@ -147,12 +167,12 @@ namespace Identity.web.Controllers
                     string passwordResetLİnk = Url.Action("ResetPasswordConfirm", "Home", new
                     {
                         userId = appUser.Id,
-                        token=passwordResetToken
+                        token = passwordResetToken
 
-                    },HttpContext.Request.Scheme);
+                    }, HttpContext.Request.Scheme);
 
 
-                    Helper.PasswordReset.PasswordResetSentEmail(passwordResetLİnk,resetViewModel.Email);
+                    Helper.PasswordReset.PasswordResetSentEmail(passwordResetLİnk, resetViewModel.Email);
                     ViewBag.Status = "successfull";
 
                 }
@@ -175,7 +195,7 @@ namespace Identity.web.Controllers
         }
         [HttpPost]
         //Bind işlemi sadece password alanın üzerinden yapacağımız için email alanının gelmesine gerek yok
-        public async Task<IActionResult> ResetPasswordConfirm([Bind("PasswordNew")]PasswordResetViewModel passwordResetViewModel)
+        public async Task<IActionResult> ResetPasswordConfirm([Bind("PasswordNew")] PasswordResetViewModel passwordResetViewModel)
         {
             string token = TempData["token"].ToString();
             string userId = TempData["userId"].ToString();
@@ -204,5 +224,25 @@ namespace Identity.web.Controllers
 
             return View();
         }
+
+        public async Task<IActionResult> ConfirmEmail(string userId,string token)
+        {
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            IdentityResult result = await _userManager.ConfirmEmailAsync(user,token);
+
+            if (result.Succeeded)
+            {
+               // eposta başarılı şekilde doğrulanmıştır sayfasına yönlendir.
+            }
+            else
+            {
+               //hata sayfasına yönlendir.
+            }
+
+            return View();
+        }
+
     }
 }

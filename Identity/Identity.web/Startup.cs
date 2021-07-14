@@ -64,11 +64,12 @@ namespace Identity.web
 
             services.ConfigureApplicationCookie(options =>
             {
-                options.LoginPath = new PathString("/Home/Login");//Kýsýtlý sayfalara eriþmeye çalýþtýðýnda belirtilen adrese yönlendirilir.
+                options.LoginPath = new PathString("/Home/Login");//üye olmayan kiþilerin Kýsýtlý sayfalara eriþmeye çalýþtýðýnda belirtilen adrese yönlendirilir.
                 options.LogoutPath= new PathString("/Member/LogOut");//bunu buraya koyarsak çýkýþ yap butonunun arkasýndaki asp-route-returUrl="/Home/Index" çalýþýr
                 options.Cookie = cookieBuilder;
                 options.SlidingExpiration = true;//Kullanýcý her giriþ yaptýðýnda cookie ömrü uzar. Yukarda 1 gün verdik baþlangýçta. Eðer 1 gün içerisinde tekrar girerse süre otomatik 1 gün uzar.
-                options.ExpireTimeSpan = TimeSpan.FromDays(1);
+                options.ExpireTimeSpan = TimeSpan.FromDays(30);
+                options.AccessDeniedPath = new PathString("/Member/AccessDenied");//Üye olanlarýn  yetkisiz alana giriþinde yönlendirilecek sayfa
             });
 
             services.AddControllersWithViews();
@@ -93,8 +94,8 @@ namespace Identity.web
 
             app.UseRouting();
 
-            app.UseAuthorization();
             app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

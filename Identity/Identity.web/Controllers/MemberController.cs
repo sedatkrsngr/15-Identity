@@ -151,5 +151,10 @@ namespace Identity.web.Controllers
             _signInManager.SignOutAsync();//startup tarafında logout aktif edilerek çıkış yap butonu arkasından yönlendirme yapılıyor asp-route-returUrl="/Home/Index" butonun arkasına kooyulacak kod. Yönlenen sayfa değiştirilebilir
         }
 
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+
     }
 }
