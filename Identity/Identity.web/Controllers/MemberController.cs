@@ -156,5 +156,12 @@ namespace Identity.web.Controllers
             return View();
         }
 
+
+        [Authorize(Policy = "AnkaraPolicy")] //bu şekilde yetkilendirme de yaparız
+        public IActionResult AnkaraPage()
+        {
+            return View();
+        }
+
     }
 }

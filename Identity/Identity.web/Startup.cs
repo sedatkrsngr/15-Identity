@@ -1,5 +1,6 @@
 using Identity.web.CustomValidation;
 using Identity.web.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -34,7 +35,14 @@ namespace Identity.web
 
             });
 
-          
+            //claim bazlý yetkilendirme yapmak için policy eklememiz lazým
+            services.AddAuthorization(opt =>
+            {
+                opt.AddPolicy("AnkaraPolicy", policy =>
+                {
+                    policy.RequireClaim("city", "ankara");//bu policynin kullanýldýðý yerde mutlaka bu key value kullanýcýda bulunmalu yoksa yetkisiz eriþim. Ýstersek bazý policylerde sadece key (önr burada "city") de yazýlabilir. Aranan tek þart kullanýcýda o key var mý yok mu
+                });
+            });
 
             //AppUser yerine IdentityUser da koyabiliriz ama biz IdentiyUser içerisindeki tanýmlamalardan fazlasýný tanýmlayacaðýmýz için ondan kalýtým alýp AppUser Classýný oluþturduk
             //IdentityRole içerisindeki tanýmlar yapýmýza yetersiz ise AppUser gibi yeni bir class oluþturarak bunun önüne geçebiliriz.
@@ -65,16 +73,19 @@ namespace Identity.web
             services.ConfigureApplicationCookie(options =>
             {
                 options.LoginPath = new PathString("/Home/Login");//üye olmayan kiþilerin Kýsýtlý sayfalara eriþmeye çalýþtýðýnda belirtilen adrese yönlendirilir.
-                options.LogoutPath= new PathString("/Member/LogOut");//bunu buraya koyarsak çýkýþ yap butonunun arkasýndaki asp-route-returUrl="/Home/Index" çalýþýr
+                options.LogoutPath = new PathString("/Member/LogOut");//bunu buraya koyarsak çýkýþ yap butonunun arkasýndaki asp-route-returUrl="/Home/Index" çalýþýr
                 options.Cookie = cookieBuilder;
                 options.SlidingExpiration = true;//Kullanýcý her giriþ yaptýðýnda cookie ömrü uzar. Yukarda 1 gün verdik baþlangýçta. Eðer 1 gün içerisinde tekrar girerse süre otomatik 1 gün uzar.
                 options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.AccessDeniedPath = new PathString("/Member/AccessDenied");//Üye olanlarýn  yetkisiz alana giriþinde yönlendirilecek sayfa
             });
 
+            services.AddScoped<IClaimsTransformation, ClaimProvider.ClaimProvider>();//bu interfacenin kullanýldýðý yerde Claimproviderdan nesne örneði oluþtursun
             services.AddControllersWithViews();
 
-         
+
+
+
 
         }
 
